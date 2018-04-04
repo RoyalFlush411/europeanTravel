@@ -397,7 +397,7 @@ public class europeanTravelScript : MonoBehaviour
                fromCities.Add("Amsterdam CS");
                fromCities.Add("Utrecht CS");
                fromCities.Add("Den Haag CS");
-               fromCities.Add("Zetphen");
+               fromCities.Add("Zutphen");
                fromCities.Add("Maastricht");
                fromCities.Add("Schiphol A'port");
                fromCities.Add("Delft");
@@ -414,7 +414,7 @@ public class europeanTravelScript : MonoBehaviour
                destinationCities.Add("Assen");
                destinationCities.Add("Eindhoven");
                destinationCities.Add("Nijmegen");
-               destinationCities.Add("Zandvort aan Zee");
+               destinationCities.Add("Zandvoort aan Zee");
                destinationCities.Add("Kerkrade Centrum");
                break;
 
@@ -932,7 +932,7 @@ public class europeanTravelScript : MonoBehaviour
 	private IEnumerator ProcessTwitchCommand(string command)
 	{
 		List<KMSelectable> selectables = new List<KMSelectable>();
-		
+
 		if (command.Substring(0, 7) == "submit ") command = command.Remove(0, 7);
 
 		command = command.ToLowerInvariant();

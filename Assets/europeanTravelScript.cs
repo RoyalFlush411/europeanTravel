@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using europeanTravel;
+using System.Text.RegularExpressions;
 
 public class europeanTravelScript : MonoBehaviour
 {
@@ -908,4 +909,91 @@ public class europeanTravelScript : MonoBehaviour
             Debug.LogFormat("[European Travel #{0}] Strike! Your train has departed!", moduleId);
         }
     }
+
+	bool AtLeast(string input, string target, int min = 1)
+	{
+		return input.Length >= min && input.Length <= target.Length && target.StartsWith(input);
+	}
+
+	string NormalizeString(string input)
+	{
+		return input.Replace('ü', 'u').Replace('ó', 'o').Replace('á', 'a').Replace('í', 'i').Replace('î', 'i');
+	}
+
+	int ModDistance(int a, int b, int c)
+	{
+		return (b - a + c) % c;
+	}
+
+    #pragma warning disable 414
+	private string TwitchHelpMessage = "Submit your answer using !{0} submit <type>;<class>;<departure>;<destination>;<seat>;<price>. City names are matched from the beginning and must be unique.";
+    #pragma warning restore 414
+
+	private IEnumerator ProcessTwitchCommand(string command)
+	{
+		List<KMSelectable> selectables = new List<KMSelectable>();
+		
+		if (command.Substring(0, 7) == "submit ") command = command.Remove(0, 7);
+
+		command = command.ToLowerInvariant();
+		string[] options = command.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+		bool rtn = AtLeast(options[0], "rtn");
+		if (rtn != (singleReturnText.text == "RTN")) selectables.Add(singleReturnBut);
+
+		bool firstclass = AtLeast(options[1], "1st");
+		if (firstclass != (classText.text == "1st class")) selectables.Add(classBut);
+
+		var cities = fromCities.Where(x => NormalizeString(x.ToLowerInvariant()).StartsWith(options[2]));
+		int count = cities.Count();
+		if (count != 1)
+		{
+			if (count == 0) yield return "sendtochaterror That doesn't match any departure cities.";
+			else if (count > 1) yield return "sendtochaterror That matches more than one departure city.";
+			yield break;
+		}
+
+		for (int i = 0; i < ModDistance(fromIndex, fromCities.IndexOf(cities.First()), fromCities.Count); i++) selectables.Add(fromRight);
+
+		cities = destinationCities.Where(x => NormalizeString(x.ToLowerInvariant()).StartsWith(options[3]));
+		count = cities.Count();
+		if (count != 1)
+		{
+			if (count == 0) yield return "sendtochaterror That doesn't match any destination cities.";
+			else if (count > 1) yield return "sendtochaterror That matches more than one destination city.";
+			yield break;
+		}
+
+		for (int i = 0; i < ModDistance(destinationIndex, destinationCities.IndexOf(cities.First()), destinationCities.Count); i++) selectables.Add(destinationRight);
+
+		int presses = ModDistance(seatIndex, seatAllocation.ToList().IndexOf(options[4].ToUpperInvariant()), seatAllocation.Length);
+		for (int i = 0; i < presses; i++) selectables.Add(seatUp);
+
+		Match targetPrice = Regex.Match(options[5], @"^€?(\d{1,3})(?:[.,](\d{1,2}))?$");
+		if (targetPrice.Success)
+		{
+			var priceInts = price.Remove(3, 1).ToCharArray().Select(x => x - '0').ToArray();
+			var digitButtons = new[] { digit1Up, digit2Up, digit3Up, digit4Up, digit5Up };
+
+			string number = targetPrice.Groups[1].Value.PadLeft(3, '0') + (targetPrice.Groups.Count == 2 ? targetPrice.Groups[2].Value.PadRight(2, '0') : "");
+			for (int i = 0; i < 5; i++)
+			{
+				presses = ModDistance(priceInts[i], number[i] - '0', 10);
+				for (int a = 0; a < presses; a++) selectables.Add(digitButtons[i]);
+			}
+		}
+		else
+		{
+			yield return "sendtochaterror That's a invalid price.";
+			yield break;
+		}
+
+		selectables.Add(bellButton);
+
+		foreach (KMSelectable selectable in selectables)
+		{
+			selectable.OnInteract();
+			yield return new WaitForSeconds(0.025f);
+		}
+	}
 }

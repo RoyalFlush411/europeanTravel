@@ -936,12 +936,16 @@ public class europeanTravelScript : MonoBehaviour
 		if (command.Substring(0, 7) == "submit ") command = command.Remove(0, 7);
 
 		command = command.ToLowerInvariant();
-		string[] options = command.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+		string[] options = command.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
 
-		bool rtn = AtLeast(options[0], "rtn");
+		bool rtn = AtLeast(options[0], "rtn ticket") || AtLeast(options[0], "return ticket");
+		bool sgl = AtLeast(options[0], "sgl ticket") || AtLeast(options[0], "single ticket");
+		if (!rtn && !sgl) yield break;
 		if (rtn != (singleReturnText.text == "RTN")) selectables.Add(singleReturnBut);
 
-		bool firstclass = AtLeast(options[1], "1st");
+		bool firstclass = AtLeast(options[1], "1st class") || AtLeast(options[1], "first class");
+		bool secondclass = AtLeast(options[1], "2nd class") || AtLeast(options[1], "second class");
+		if (!firstclass && !secondclass) yield break;
 		if (firstclass != (classText.text == "1st class")) selectables.Add(classBut);
 
 		var cities = fromCities.Where(x => NormalizeString(x.ToLowerInvariant()).StartsWith(options[2]));
@@ -975,7 +979,7 @@ public class europeanTravelScript : MonoBehaviour
 			var priceInts = price.Remove(3, 1).ToCharArray().Select(x => x - '0').ToArray();
 			var digitButtons = new[] { digit1Up, digit2Up, digit3Up, digit4Up, digit5Up };
 
-			string number = targetPrice.Groups[1].Value.PadLeft(3, '0') + (targetPrice.Groups.Count == 2 ? targetPrice.Groups[2].Value.PadRight(2, '0') : "");
+			string number = targetPrice.Groups[1].Value.PadLeft(3, '0') + (targetPrice.Groups[2].Success ? targetPrice.Groups[2].Value.PadRight(2, '0') : "00");
 			for (int i = 0; i < 5; i++)
 			{
 				presses = ModDistance(priceInts[i], number[i] - '0', 10);

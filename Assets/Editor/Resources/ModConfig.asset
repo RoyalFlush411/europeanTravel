@@ -13,7 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: europeanTravel
   title: European Travel
-  description: 'European Travel 1.1
+  description: 'European Travel 1.11
 
     All aboard!
 
@@ -33,6 +33,6 @@ MonoBehaviour:
 
 
     Manual available here: https://ktane.timwi.de/HTML/European%20Travel.html'
-  version: 1.1
+  version: 1.11
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 796ebab984327491c96e7f72880bb23f, type: 3}

@@ -449,7 +449,7 @@ public class europeanTravelScript : MonoBehaviour
                 destinationCities.Add("Nottingham");
                 destinationCities.Add("Manchester Victoria");
                 destinationCities.Add("Sheffield");
-                destinationCities.Add("Wolverhamption");
+                destinationCities.Add("Wolverhampton");
                 destinationCities.Add("Hull");
                 break;
 

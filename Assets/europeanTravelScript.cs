@@ -932,11 +932,13 @@ public class europeanTravelScript : MonoBehaviour
 	private IEnumerator ProcessTwitchCommand(string command)
 	{
 		List<KMSelectable> selectables = new List<KMSelectable>();
-
-		if (command.Substring(0, 7) == "submit ") command = command.Remove(0, 7);
-
 		command = command.ToLowerInvariant();
+
+		if (command.StartsWith("submit")) command = command.Substring(6);
+		
 		string[] options = command.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+
+		if (options.Length != 6) yield break;
 
 		bool rtn = AtLeast(options[0], "rtn ticket") || AtLeast(options[0], "return ticket");
 		bool sgl = AtLeast(options[0], "sgl ticket") || AtLeast(options[0], "single ticket");

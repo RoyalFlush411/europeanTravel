@@ -932,11 +932,13 @@ public class europeanTravelScript : MonoBehaviour
 	private IEnumerator ProcessTwitchCommand(string command)
 	{
 		List<KMSelectable> selectables = new List<KMSelectable>();
-
-		if (command.Substring(0, 7) == "submit ") command = command.Remove(0, 7);
-
 		command = command.ToLowerInvariant();
+
+		if (command.StartsWith("submit")) command = command.Substring(6);
+		
 		string[] options = command.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+
+		if (options.Length != 6) yield break;
 
 		bool rtn = AtLeast(options[0], "rtn ticket") || AtLeast(options[0], "return ticket");
 		bool sgl = AtLeast(options[0], "sgl ticket") || AtLeast(options[0], "single ticket");
@@ -998,6 +1000,50 @@ public class europeanTravelScript : MonoBehaviour
 		{
 			selectable.OnInteract();
 			yield return new WaitForSeconds(0.025f);
+		}
+	}
+
+	private IEnumerator TwitchHandleForcedSolve()
+	{
+		yield return null;
+		while (!solved)
+		{
+			if (singleReturnText.text != correctSingle)
+			{
+				singleReturnBut.OnInteract();
+			}
+			else if (classText.text != correctClass)
+			{
+				classBut.OnInteract();
+			}
+			else if (fromCitiesText.text != correctFrom)
+			{
+				fromRight.OnInteract();
+			}
+			else if (destinationCitiesText.text != correctDestination)
+			{
+				destinationRight.OnInteract();
+			}
+			else if (seatText.text != correctSeat)
+			{
+				seatUp.OnInteract();
+			}
+			else if (priceText.text != correctPrice)
+			{
+				Match targetPrice = Regex.Match(correctPrice, @"^€?(\d{1,3})(?:[.,](\d{1,2}))?$");
+				var priceInts = price.Remove(3, 1).ToCharArray().Select(x => x - '0').ToArray();
+				var digitButtons = new[] { digit1Up, digit2Up, digit3Up, digit4Up, digit5Up };
+
+				var number = (targetPrice.Groups[1].Value.PadLeft(3, '0') + (targetPrice.Groups[2].Success ? targetPrice.Groups[2].Value.PadRight(2, '0') : "00")).ToCharArray().Select(x => x - '0').ToArray();
+				var button = Enumerable.Range(0,5).First(x => priceInts[x] != number[x]);
+				digitButtons[button].OnInteract();
+			}
+			else
+			{
+				bellButton.OnInteract();
+			}
+
+			yield return new WaitForSeconds(0.1f);
 		}
 	}
 }

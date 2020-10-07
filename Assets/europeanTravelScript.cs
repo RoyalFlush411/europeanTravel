@@ -972,7 +972,14 @@ public class europeanTravelScript : MonoBehaviour
 
 		for (int i = 0; i < ModDistance(destinationIndex, destinationCities.IndexOf(cities.First()), destinationCities.Count); i++) selectables.Add(destinationRight);
 
-		int presses = ModDistance(seatIndex, seatAllocation.ToList().IndexOf(options[4].ToUpperInvariant()), seatAllocation.Length);
+		var targetIndex = seatAllocation.ToList().IndexOf(options[4].ToUpperInvariant());
+		if (targetIndex == -1)
+		{
+			yield return "sendtochaterror That's not a valid seat.";
+			yield break;
+		}
+
+		int presses = ModDistance(seatIndex, targetIndex, seatAllocation.Length);
 		for (int i = 0; i < presses; i++) selectables.Add(seatUp);
 
 		Match targetPrice = Regex.Match(options[5], @"^€?(\d{1,3})(?:[.,](\d{1,2}))?$");
